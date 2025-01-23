@@ -1,4 +1,5 @@
- function that performs matrix multiplication with numpy """
+#!/usr/bin/env python3
+""" defines function that performs matrix multiplication with numpy """
 
 
 import numpy as np
