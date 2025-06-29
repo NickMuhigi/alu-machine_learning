@@ -2,35 +2,40 @@
 """
 Uses the (unofficial) SpaceX API to print the upcoming launch as:
 <launch name> (<date>) <rocket name> - <launchpad name> (<launchpad locality>)
+
+The “upcoming launch” is the one which is the soonest from now, in UTC
+and if 2 launches have the same date, it's the first one in the API result.
 """
 
 import requests
 
 if __name__ == "__main__":
-    launches_url = "https://api.spacexdata.com/v4/launches/upcoming"
-    launches = requests.get(launches_url).json()
+    # Fetch upcoming launches
+    url = "https://api.spacexdata.com/v4/launches/upcoming"
+    response = requests.get(url)
+    launches = response.json()
 
-    # Get launch with earliest date_unix
+    # Find the launch with the earliest date_unix
     earliest = None
     for launch in launches:
-        if earliest is None or launch["date_unix"] < earliest["date_unix"]:
+        if earliest is None or launch['date_unix'] < earliest['date_unix']:
             earliest = launch
 
-    # Get relevant data
-    launch_name = earliest["name"]
-    date_local = earliest["date_local"]
-    rocket_id = earliest["rocket"]
-    pad_id = earliest["launchpad"]
+    # Extract launch data
+    launch_name = earliest.get('name')
+    date_local = earliest.get('date_local')
+    rocket_id = earliest.get('rocket')
+    pad_id = earliest.get('launchpad')
 
-    # Get rocket name
+    # Fetch rocket info
     rocket_url = f"https://api.spacexdata.com/v4/rockets/{rocket_id}"
-    rocket_name = requests.get(rocket_url).json().get("name")
+    rocket_name = requests.get(rocket_url).json().get('name')
 
-    # Get launchpad name and locality
+    # Fetch launchpad info
     pad_url = f"https://api.spacexdata.com/v4/launchpads/{pad_id}"
-    pad_info = requests.get(pad_url).json()
-    pad_name = pad_info.get("name")
-    pad_locality = pad_info.get("locality")
+    pad_data = requests.get(pad_url).json()
+    pad_name = pad_data.get('name')
+    pad_locality = pad_data.get('locality')
 
-    # Final output
+    # Print result in required format
     print(f"{launch_name} ({date_local}) {rocket_name} - {pad_name} ({pad_locality})")
